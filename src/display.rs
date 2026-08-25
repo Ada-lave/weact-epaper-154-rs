@@ -6,7 +6,8 @@ const WIDTH: usize = 200;
 const FRAME_BUFFER: usize = (HEIGHT * WIDTH) / 4;
 
 pub struct Display {
-    data: [u8; FRAME_BUFFER]
+    data: [u8; FRAME_BUFFER],
+    spi: embedded_hal::spi::SpiDevice
 }
 
 impl Display {
