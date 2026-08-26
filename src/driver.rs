@@ -52,6 +52,42 @@ where
         Ok(())
     }
 
+    pub fn init(&mut self) -> Result<(), ErrorOf<SPI, DC, BUSY, RESET>> {
+        self.send_command(0x4D)?;
+        self.send_data(&[0x78])?;
+
+        self.send_command(0x00)?;
+        self.send_data(&[0x0F, 0x29])?;
+
+        self.send_command(0x06)?;
+        self.send_data(&[
+            0x0D,
+            0x12,
+            0x30,
+            0x20,
+            0x19,
+            0x2A,
+            0x22,
+        ])?;
+
+        self.send_command(0x30)?;
+        self.send_data(&[0x08])?;
+
+        self.send_command(0x50)?;
+        self.send_data(&[0x37])?;
+
+        self.send_command(0x61)?;
+        self.send_data(&[
+            0x00, 0xC8,
+            0x00, 0xC8
+        ])?;
+
+        self.send_command(0xE9)?;
+        self.send_data(&[0x01])?;
+
+        Ok(())
+    }
+
     fn send_command(&mut self, cmd: u8) -> Result<(), ErrorOf<SPI, DC, BUSY, RESET>> {
         self.dc.set_low().map_err(DriverError::DcPin)?;
 
