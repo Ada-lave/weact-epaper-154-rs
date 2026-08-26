@@ -29,7 +29,7 @@ pub type ErrorOf<SPI, DC, BUSY, RESET> = DriverError<
 /// init()
 /// 
 /// power_on()
-pub struct DisplayDriver<SPI, DC, BUSY, DELAY, RESET> {
+pub struct WeAct154Display<SPI, DC, BUSY, DELAY, RESET> {
     frame_buffer: [u8; FRAME_BUFFER as usize],
     spi: SPI,
     dc: DC,
@@ -38,7 +38,7 @@ pub struct DisplayDriver<SPI, DC, BUSY, DELAY, RESET> {
     reset: RESET
 }
 
-impl<SPI, DC, BUSY, DELAY, RESET> DisplayDriver<SPI, DC, BUSY, DELAY, RESET>
+impl<SPI, DC, BUSY, DELAY, RESET> WeAct154Display<SPI, DC, BUSY, DELAY, RESET>
 where 
     SPI: SpiDevice,
     DC: OutputPin,
@@ -47,7 +47,7 @@ where
     RESET: OutputPin
 {
     pub fn new(spi: SPI, dc: DC, busy: BUSY, delay: DELAY, reset: RESET) -> Self {
-        return DisplayDriver { frame_buffer: [0x00; FRAME_BUFFER as usize], spi, dc, busy, delay, reset };
+        return WeAct154Display { frame_buffer: [0x00; FRAME_BUFFER as usize], spi, dc, busy, delay, reset };
     }
 
     fn send_command(&mut self, cmd: u8) -> Result<(), ErrorOf<SPI, DC, BUSY, RESET>> {

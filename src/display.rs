@@ -1,9 +1,9 @@
 use embedded_graphics_core::{Pixel, draw_target::DrawTarget, geometry::{OriginDimensions, Size}};
 use embedded_hal::{delay::DelayNs, digital::{InputPin, OutputPin}, spi::SpiDevice};
 
-use crate::{color::WBRYColor, driver::{DisplayDriver, ErrorOf, HEIGHT, WIDTH}};
+use crate::{color::WBRYColor, driver::{WeAct154Display, ErrorOf, HEIGHT, WIDTH}};
 
-impl<SPI, DC, BUSY, DELAY, RESET> OriginDimensions for DisplayDriver<SPI, DC, BUSY, DELAY, RESET>
+impl<SPI, DC, BUSY, DELAY, RESET> OriginDimensions for WeAct154Display<SPI, DC, BUSY, DELAY, RESET>
 where 
     SPI: SpiDevice,
     DC: OutputPin,
@@ -15,7 +15,7 @@ where
 }
 
 
-impl<SPI, DC, BUSY, DELAY, RESET> DisplayDriver<SPI, DC, BUSY, DELAY, RESET>
+impl<SPI, DC, BUSY, DELAY, RESET> WeAct154Display<SPI, DC, BUSY, DELAY, RESET>
 where 
     SPI: SpiDevice,
     DC: OutputPin,
@@ -44,7 +44,7 @@ where
     }
 }
 
-impl<SPI, DC, BUSY, DELAY, RESET> DrawTarget for DisplayDriver<SPI, DC, BUSY, DELAY, RESET>
+impl<SPI, DC, BUSY, DELAY, RESET> DrawTarget for WeAct154Display<SPI, DC, BUSY, DELAY, RESET>
 where 
     SPI: SpiDevice,
     DC: OutputPin,
