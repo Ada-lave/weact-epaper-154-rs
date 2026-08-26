@@ -80,8 +80,12 @@ where
     
     pub fn flush(&mut self) -> Result<(), ErrorOf<SPI, DC, BUSY>> {
         self.send_command(0x10)?;
-        self.wait_until_idle()?;
         self.send_frame_buffer()?;
+
+        self.send_command(0x12)?;
+        self.send_data(&[0x00])?;
+        self.wait_until_idle()?;
+
         Ok(())
     }
 
