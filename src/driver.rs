@@ -150,6 +150,7 @@ where
     pub fn flush(&mut self) -> Result<(), ErrorOf<SPI, DC, BUSY, RESET>> {
         self.send_command(0x10)?;
         self.send_frame_buffer()?;
+        self.wait_until_idle()?;
 
         self.send_command(0x12)?;
         self.send_data(&[0x00])?;
