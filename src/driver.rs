@@ -62,12 +62,6 @@ where
         Ok(())
     }
 
-    pub fn power_on(&mut self) -> Result<(), ErrorOf<SPI, DC, BUSY>> {
-        self.send_command(0x06)?;
-        self.wait_until_idle()?;
-        Ok(())
-    }
-
     fn send_frame_buffer(&mut self) -> Result<(), ErrorOf<SPI, DC, BUSY>> {
         self.dc.set_high().map_err(DriverError::DcPin)?;
 
@@ -83,6 +77,10 @@ where
         self.send_frame_buffer()?;
 
         self.send_command(0x12)?;
+        self.send_data(&[0x00])?;
+        self.wait_until_idle()?;
+
+        self.send_command(0x02)?;
         self.send_data(&[0x00])?;
         self.wait_until_idle()?;
 
