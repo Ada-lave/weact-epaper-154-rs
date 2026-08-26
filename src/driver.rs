@@ -154,6 +154,7 @@ where
         self.wait_until_idle()?;
 
         self.send_command(0x12)?;
+        self.send_data(&[0x00])?;
         self.wait_until_idle()?;
 
         Ok(())
