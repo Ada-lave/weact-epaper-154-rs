@@ -1,17 +1,29 @@
-use crate::color::Color;
+use embedded_graphics_core::{Pixel, draw_target::DrawTarget, geometry::{OriginDimensions, Size}};
+use embedded_hal::{delay::DelayNs, digital::{InputPin, OutputPin}, spi::SpiDevice};
 
-const HEIGHT: usize = 200;
-const WIDTH: usize = 200;
+use crate::{color::WBRYColor, driver::{DisplayDriver, ErrorOf, HEIGHT, WIDTH}};
 
-const FRAME_BUFFER: usize = (HEIGHT * WIDTH) / 4;
-
-pub struct Display {
-    data: [u8; FRAME_BUFFER],
-    spi: embedded_hal::spi::SpiDevice
+impl<SPI, DC, BUSY, DELAY> OriginDimensions for DisplayDriver<SPI, DC, BUSY, DELAY>
+where 
+    SPI: SpiDevice,
+    DC: OutputPin,
+    BUSY: InputPin
+{
+    fn size(&self) -> Size {
+        return Size { width: WIDTH as u32, height: HEIGHT as u32};
+    }
 }
 
-impl Display {
-    pub fn set_pixel(mut self, x: usize, y: usize, color: Color) {
+
+impl<SPI, DC, BUSY, DELAY> DisplayDriver<SPI, DC, BUSY, DELAY>
+where 
+    SPI: SpiDevice,
+    DC: OutputPin,
+    BUSY: InputPin,
+    DELAY: DelayNs
+ 
+{
+    pub fn set_pixel(&mut self, x: i32, y: i32, color: WBRYColor) {
         if x >= HEIGHT || y >= WIDTH {
             return;
         }
@@ -21,11 +33,36 @@ impl Display {
         let pixel_in_byte = byte_index % 4;
         let shift = 6 - pixel_in_byte * 2;
 
-        self.data[byte_index] &=
+        let buffer = self.frame_buffer_mut();
+
+        buffer[byte_index as usize] &=
             !(0b11 << shift);
 
-        // записать новые
-        self.data[byte_index] |=
+        // write new
+        buffer[byte_index as usize] |=
             (color as u8) << shift;
+    }
+}
+
+impl<SPI, DC, BUSY, DELAY> DrawTarget for DisplayDriver<SPI, DC, BUSY, DELAY>
+where 
+    SPI: SpiDevice,
+    DC: OutputPin,
+    BUSY: InputPin,
+    DELAY: DelayNs
+ 
+{
+    type Color = WBRYColor;
+    type Error = ErrorOf<SPI, DC, BUSY>;
+
+
+    fn draw_iter<I>(&mut self, pixels: I) -> Result<(), Self::Error>
+    where
+        I: IntoIterator<Item = Pixel<Self::Color>>
+    {
+        for Pixel(point, color) in pixels.into_iter() {
+            self.set_pixel(point.x, point.y, color);
+        }
+        Ok(())
     }
 }
