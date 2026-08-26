@@ -24,13 +24,13 @@ where
  
 {
     pub fn set_pixel(&mut self, x: i32, y: i32, color: WBRYColor) {
-        if x >= HEIGHT || y >= WIDTH {
+        if x < 0 || y < 0 || x >= HEIGHT || y >= WIDTH {
             return;
         }
 
         let pixel = y * HEIGHT + x;
         let byte_index = pixel / 4;
-        let pixel_in_byte = byte_index % 4;
+        let pixel_in_byte = pixel % 4;
         let shift = 6 - pixel_in_byte * 2;
 
         let buffer = self.frame_buffer_mut();
