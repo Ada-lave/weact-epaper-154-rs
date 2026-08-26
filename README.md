@@ -1,5 +1,7 @@
 # weact-epaper-154-rs
 
+![example of works](docs/example.png)
+
 An experimental Rust driver for a 1.54-inch, 200 x 200, four-color
 (black, white, red, and yellow) e-paper display. The crate is built on
 [`embedded-hal` 1.0](https://docs.rs/embedded-hal/1.0) and implements the
