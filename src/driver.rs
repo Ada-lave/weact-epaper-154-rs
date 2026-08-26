@@ -6,6 +6,7 @@ pub const WIDTH: i32 = 200;
 
 const FRAME_BUFFER: i32 = (HEIGHT * WIDTH) / 4;
 
+#[derive(Debug)]
 pub enum DriverError<SpiError, PinError, BusyPin, ResetPin> {
     Spi(SpiError),
     DcPin(PinError),
