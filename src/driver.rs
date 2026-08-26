@@ -20,6 +20,15 @@ pub type ErrorOf<SPI, DC, BUSY, RESET> = DriverError<
     <RESET as embedded_hal::digital::ErrorType>::Error
 >;
 
+/// Before usage you need do using this steps:
+/// 
+/// new()
+/// 
+/// reset()
+/// 
+/// init()
+/// 
+/// power_on()
 pub struct DisplayDriver<SPI, DC, BUSY, DELAY, RESET> {
     frame_buffer: [u8; FRAME_BUFFER as usize],
     spi: SPI,
@@ -145,7 +154,7 @@ where
         self.send_command(0x12)?;
         self.send_data(&[0x00])?;
         self.wait_until_idle()?;
-        
+
         Ok(())
     }
 
