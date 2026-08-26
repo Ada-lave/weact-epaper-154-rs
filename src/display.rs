@@ -3,7 +3,7 @@ use embedded_hal::{delay::DelayNs, digital::{InputPin, OutputPin}, spi::SpiDevic
 
 use crate::{color::WBRYColor, driver::{DisplayDriver, ErrorOf, HEIGHT, WIDTH}};
 
-impl<SPI, DC, BUSY, DELAY> OriginDimensions for DisplayDriver<SPI, DC, BUSY, DELAY>
+impl<SPI, DC, BUSY, DELAY, RESET> OriginDimensions for DisplayDriver<SPI, DC, BUSY, DELAY, RESET>
 where 
     SPI: SpiDevice,
     DC: OutputPin,
@@ -15,13 +15,13 @@ where
 }
 
 
-impl<SPI, DC, BUSY, DELAY> DisplayDriver<SPI, DC, BUSY, DELAY>
+impl<SPI, DC, BUSY, DELAY, RESET> DisplayDriver<SPI, DC, BUSY, DELAY, RESET>
 where 
     SPI: SpiDevice,
     DC: OutputPin,
     BUSY: InputPin,
-    DELAY: DelayNs
- 
+    DELAY: DelayNs,
+    RESET: OutputPin
 {
     pub fn set_pixel(&mut self, x: i32, y: i32, color: WBRYColor) {
         if x < 0 || y < 0 || x >= HEIGHT || y >= WIDTH {
@@ -44,16 +44,16 @@ where
     }
 }
 
-impl<SPI, DC, BUSY, DELAY> DrawTarget for DisplayDriver<SPI, DC, BUSY, DELAY>
+impl<SPI, DC, BUSY, DELAY, RESET> DrawTarget for DisplayDriver<SPI, DC, BUSY, DELAY, RESET>
 where 
     SPI: SpiDevice,
     DC: OutputPin,
     BUSY: InputPin,
-    DELAY: DelayNs
- 
+    DELAY: DelayNs,
+    RESET: OutputPin
 {
     type Color = WBRYColor;
-    type Error = ErrorOf<SPI, DC, BUSY>;
+    type Error = ErrorOf<SPI, DC, BUSY, RESET>;
 
 
     fn draw_iter<I>(&mut self, pixels: I) -> Result<(), Self::Error>
