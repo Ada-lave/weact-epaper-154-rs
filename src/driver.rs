@@ -41,6 +41,24 @@ where
         return DisplayDriver { frame_buffer: [0x00; FRAME_BUFFER as usize], spi, dc, busy, delay, reset };
     }
 
+    fn send_command(&mut self, cmd: u8) -> Result<(), ErrorOf<SPI, DC, BUSY, RESET>> {
+        self.dc.set_low().map_err(DriverError::DcPin)?;
+
+        self.spi.transaction(&mut [
+            Operation::Write(&[cmd])
+        ]).map_err(DriverError::Spi)?;
+
+        Ok(())
+    }
+
+    fn send_data(&mut self, frame_buffer: &[u8]) -> Result<(), ErrorOf<SPI, DC, BUSY, RESET>> {
+        self.dc.set_high().map_err(DriverError::DcPin)?;
+        self.spi.transaction(&mut [
+            Operation::Write(frame_buffer)
+        ]).map_err(DriverError::Spi)?;
+        Ok(())
+    }
+
     pub fn reset(&mut self) -> Result<(), ErrorOf<SPI, DC, BUSY, RESET>> {
         self.reset.set_high().map_err(DriverError::ResetPin)?;
         self.delay.delay_ms(50);
@@ -88,21 +106,18 @@ where
         Ok(())
     }
 
-    fn send_command(&mut self, cmd: u8) -> Result<(), ErrorOf<SPI, DC, BUSY, RESET>> {
-        self.dc.set_low().map_err(DriverError::DcPin)?;
-
-        self.spi.transaction(&mut [
-            Operation::Write(&[cmd])
-        ]).map_err(DriverError::Spi)?;
+    pub fn power_on(&mut self) -> Result<(), ErrorOf<SPI, DC, BUSY, RESET>> {
+        self.send_command(0x04)?;
+        self.wait_until_idle()?;
 
         Ok(())
     }
 
-    fn send_data(&mut self, frame_buffer: &[u8]) -> Result<(), ErrorOf<SPI, DC, BUSY, RESET>> {
-        self.dc.set_high().map_err(DriverError::DcPin)?;
-        self.spi.transaction(&mut [
-            Operation::Write(frame_buffer)
-        ]).map_err(DriverError::Spi)?;
+    pub fn power_off(&mut self) -> Result<(), ErrorOf<SPI, DC, BUSY, RESET>> {
+        self.send_command(0x02)?;
+        self.send_data(&[0x00])?;
+        self.wait_until_idle()?;
+
         Ok(())
     }
 
@@ -130,11 +145,7 @@ where
         self.send_command(0x12)?;
         self.send_data(&[0x00])?;
         self.wait_until_idle()?;
-
-        self.send_command(0x02)?;
-        self.send_data(&[0x00])?;
-        self.wait_until_idle()?;
-
+        
         Ok(())
     }
 
