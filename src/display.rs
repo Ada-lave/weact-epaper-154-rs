@@ -10,7 +10,7 @@ where
     BUSY: InputPin
 {
     fn size(&self) -> Size {
-        return Size { width: WIDTH as u32, height: HEIGHT as u32};
+        Size { width: WIDTH as u32, height: HEIGHT as u32}
     }
 }
 

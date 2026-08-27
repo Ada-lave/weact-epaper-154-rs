@@ -48,7 +48,7 @@ where
     RESET: OutputPin
 {
     pub fn new(spi: SPI, dc: DC, busy: BUSY, delay: DELAY, reset: RESET) -> Self {
-        return WeAct154Display { frame_buffer: [0x55; FRAME_BUFFER as usize], spi, dc, busy, delay, reset };
+        WeAct154Display { frame_buffer: [0x55; FRAME_BUFFER as usize], spi, dc, busy, delay, reset }
     }
 
     fn send_command(&mut self, cmd: u8) -> Result<(), ErrorOf<SPI, DC, BUSY, RESET>> {
