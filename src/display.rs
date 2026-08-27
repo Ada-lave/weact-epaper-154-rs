@@ -1,27 +1,40 @@
-use embedded_graphics_core::{Pixel, draw_target::DrawTarget, geometry::{OriginDimensions, Size}};
-use embedded_hal::{delay::DelayNs, digital::{InputPin, OutputPin}, spi::SpiDevice};
+use embedded_graphics_core::{
+    Pixel,
+    draw_target::DrawTarget,
+    geometry::{OriginDimensions, Size},
+};
+use embedded_hal::{
+    delay::DelayNs,
+    digital::{InputPin, OutputPin},
+    spi::SpiDevice,
+};
 
-use crate::{color::WBRYColor, driver::{WeAct154Display, ErrorOf, HEIGHT, WIDTH}};
+use crate::{
+    color::WBRYColor,
+    driver::{ErrorOf, HEIGHT, WIDTH, WeAct154Display},
+};
 
 impl<SPI, DC, BUSY, DELAY, RESET> OriginDimensions for WeAct154Display<SPI, DC, BUSY, DELAY, RESET>
-where 
+where
     SPI: SpiDevice,
     DC: OutputPin,
-    BUSY: InputPin
+    BUSY: InputPin,
 {
     fn size(&self) -> Size {
-        Size { width: WIDTH as u32, height: HEIGHT as u32}
+        Size {
+            width: WIDTH as u32,
+            height: HEIGHT as u32,
+        }
     }
 }
 
-
 impl<SPI, DC, BUSY, DELAY, RESET> WeAct154Display<SPI, DC, BUSY, DELAY, RESET>
-where 
+where
     SPI: SpiDevice,
     DC: OutputPin,
     BUSY: InputPin,
     DELAY: DelayNs,
-    RESET: OutputPin
+    RESET: OutputPin,
 {
     pub fn set_pixel(&mut self, x: i32, y: i32, color: WBRYColor) {
         if x < 0 || y < 0 || x >= HEIGHT || y >= WIDTH {
@@ -35,30 +48,27 @@ where
 
         let buffer = self.frame_buffer_mut();
 
-        buffer[byte_index as usize] &=
-            !(0b11 << shift);
+        buffer[byte_index as usize] &= !(0b11 << shift);
 
         // write new
-        buffer[byte_index as usize] |=
-            (color as u8) << shift;
+        buffer[byte_index as usize] |= (color as u8) << shift;
     }
 }
 
 impl<SPI, DC, BUSY, DELAY, RESET> DrawTarget for WeAct154Display<SPI, DC, BUSY, DELAY, RESET>
-where 
+where
     SPI: SpiDevice,
     DC: OutputPin,
     BUSY: InputPin,
     DELAY: DelayNs,
-    RESET: OutputPin
+    RESET: OutputPin,
 {
     type Color = WBRYColor;
     type Error = ErrorOf<SPI, DC, BUSY, RESET>;
 
-
     fn draw_iter<I>(&mut self, pixels: I) -> Result<(), Self::Error>
     where
-        I: IntoIterator<Item = Pixel<Self::Color>>
+        I: IntoIterator<Item = Pixel<Self::Color>>,
     {
         for Pixel(point, color) in pixels.into_iter() {
             self.set_pixel(point.x, point.y, color);

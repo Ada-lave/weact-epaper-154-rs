@@ -44,24 +44,21 @@ fn main() -> ! {
     let dispay_dc = Output::new(peripherals.GPIO12, Level::Low, OutputConfig::default());
     let display_busy = Input::new(peripherals.GPIO14, InputConfig::default());
 
-
     let spi_bus = spi::master::Spi::new(peripherals.SPI2, Config::default())
-    .unwrap()
-    .with_sck(peripherals.GPIO10)
-    .with_mosi(peripherals.GPIO11);
+        .unwrap()
+        .with_sck(peripherals.GPIO10)
+        .with_mosi(peripherals.GPIO11);
 
     let display_spi = ExclusiveDevice::new(spi_bus, display_cs, NoDelay).unwrap();
 
-
     let delay = Delay::new();
 
-    let mut weActDisplay = WeAct154Display::new(display_spi, dispay_dc, display_busy, delay, display_reset);
+    let mut we_act_display =
+        WeAct154Display::new(display_spi, dispay_dc, display_busy, delay, display_reset);
 
-    weActDisplay.reset().unwrap();
-    weActDisplay.init().unwrap();
-    weActDisplay.power_on().unwrap();
-
-
+    we_act_display.reset().unwrap();
+    we_act_display.init().unwrap();
+    we_act_display.power_on().unwrap();
 
     let text_style_red = MonoTextStyle::new(&FONT_10X20, WBRYColor::RED);
     let text_style_yellow = MonoTextStyle::new(&FONT_10X20, WBRYColor::YELLOW);
@@ -72,7 +69,7 @@ fn main() -> ! {
         text_style_red,
         Alignment::Center,
     )
-    .draw(&mut weActDisplay)
+    .draw(&mut we_act_display)
     .unwrap();
 
     Text::with_alignment(
@@ -81,16 +78,14 @@ fn main() -> ! {
         text_style_yellow,
         Alignment::Center,
     )
-    .draw(&mut weActDisplay)
+    .draw(&mut we_act_display)
     .unwrap();
 
-    weActDisplay.flush().unwrap();
-    weActDisplay.power_off().unwrap();
-    
-    // Один refresh
-    loop {
+    we_act_display.flush().unwrap();
+    we_act_display.power_off().unwrap();
 
-    }
+    // Один refresh
+    loop {}
 
     // for inspiration have a look at the examples at https://github.com/esp-rs/esp-hal/tree/esp-hal-v1.1.0/examples
 }

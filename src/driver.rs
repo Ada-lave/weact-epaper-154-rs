@@ -1,5 +1,8 @@
-use embedded_hal::{delay::DelayNs, digital::{InputPin, OutputPin}, spi::{Operation, SpiDevice}};
-
+use embedded_hal::{
+    delay::DelayNs,
+    digital::{InputPin, OutputPin},
+    spi::{Operation, SpiDevice},
+};
 
 pub const HEIGHT: i32 = 200;
 pub const WIDTH: i32 = 200;
@@ -11,24 +14,24 @@ pub enum DriverError<SpiError, PinError, BusyPin, ResetPin> {
     Spi(SpiError),
     DcPin(PinError),
     BusyPin(BusyPin),
-    ResetPin(ResetPin)
+    ResetPin(ResetPin),
 }
 
 pub type ErrorOf<SPI, DC, BUSY, RESET> = DriverError<
     <SPI as embedded_hal::spi::ErrorType>::Error,
     <DC as embedded_hal::digital::ErrorType>::Error,
     <BUSY as embedded_hal::digital::ErrorType>::Error,
-    <RESET as embedded_hal::digital::ErrorType>::Error
+    <RESET as embedded_hal::digital::ErrorType>::Error,
 >;
 
 /// Before usage you need do using this steps:
-/// 
+///
 /// new()
-/// 
+///
 /// reset()
-/// 
+///
 /// init()
-/// 
+///
 /// power_on()
 pub struct WeAct154Display<SPI, DC, BUSY, DELAY, RESET> {
     frame_buffer: [u8; FRAME_BUFFER as usize],
@@ -36,36 +39,43 @@ pub struct WeAct154Display<SPI, DC, BUSY, DELAY, RESET> {
     dc: DC,
     busy: BUSY,
     delay: DELAY,
-    reset: RESET
+    reset: RESET,
 }
 
 impl<SPI, DC, BUSY, DELAY, RESET> WeAct154Display<SPI, DC, BUSY, DELAY, RESET>
-where 
+where
     SPI: SpiDevice,
     DC: OutputPin,
     BUSY: InputPin,
     DELAY: DelayNs,
-    RESET: OutputPin
+    RESET: OutputPin,
 {
     pub fn new(spi: SPI, dc: DC, busy: BUSY, delay: DELAY, reset: RESET) -> Self {
-        WeAct154Display { frame_buffer: [0x55; FRAME_BUFFER as usize], spi, dc, busy, delay, reset }
+        WeAct154Display {
+            frame_buffer: [0x55; FRAME_BUFFER as usize],
+            spi,
+            dc,
+            busy,
+            delay,
+            reset,
+        }
     }
 
     fn send_command(&mut self, cmd: u8) -> Result<(), ErrorOf<SPI, DC, BUSY, RESET>> {
         self.dc.set_low().map_err(DriverError::DcPin)?;
 
-        self.spi.transaction(&mut [
-            Operation::Write(&[cmd])
-        ]).map_err(DriverError::Spi)?;
+        self.spi
+            .transaction(&mut [Operation::Write(&[cmd])])
+            .map_err(DriverError::Spi)?;
 
         Ok(())
     }
 
     fn send_data(&mut self, frame_buffer: &[u8]) -> Result<(), ErrorOf<SPI, DC, BUSY, RESET>> {
         self.dc.set_high().map_err(DriverError::DcPin)?;
-        self.spi.transaction(&mut [
-            Operation::Write(frame_buffer)
-        ]).map_err(DriverError::Spi)?;
+        self.spi
+            .transaction(&mut [Operation::Write(frame_buffer)])
+            .map_err(DriverError::Spi)?;
         Ok(())
     }
 
@@ -88,15 +98,7 @@ where
         self.send_data(&[0x0F, 0x29])?;
 
         self.send_command(0x06)?;
-        self.send_data(&[
-            0x0D,
-            0x12,
-            0x30,
-            0x20,
-            0x19,
-            0x2A,
-            0x22,
-        ])?;
+        self.send_data(&[0x0D, 0x12, 0x30, 0x20, 0x19, 0x2A, 0x22])?;
 
         self.send_command(0x30)?;
         self.send_data(&[0x08])?;
@@ -105,10 +107,7 @@ where
         self.send_data(&[0x37])?;
 
         self.send_command(0x61)?;
-        self.send_data(&[
-            0x00, 0xC8,
-            0x00, 0xC8
-        ])?;
+        self.send_data(&[0x00, 0xC8, 0x00, 0xC8])?;
 
         self.send_command(0xE9)?;
         self.send_data(&[0x01])?;
@@ -141,13 +140,13 @@ where
     fn send_frame_buffer(&mut self) -> Result<(), ErrorOf<SPI, DC, BUSY, RESET>> {
         self.dc.set_high().map_err(DriverError::DcPin)?;
 
-        self.spi.transaction(&mut [
-            Operation::Write(&self.frame_buffer)
-        ]).map_err(DriverError::Spi)?;
+        self.spi
+            .transaction(&mut [Operation::Write(&self.frame_buffer)])
+            .map_err(DriverError::Spi)?;
 
         Ok(())
     }
-    
+
     pub fn flush(&mut self) -> Result<(), ErrorOf<SPI, DC, BUSY, RESET>> {
         self.send_command(0x10)?;
         self.send_frame_buffer()?;
@@ -164,4 +163,3 @@ where
         &mut self.frame_buffer
     }
 }
-

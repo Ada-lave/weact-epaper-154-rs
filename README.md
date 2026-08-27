@@ -168,6 +168,100 @@ match display.flush() {
   needed.
 - Deep sleep and partial refresh are not implemented.
 
+## Roadmap
+
+### 1. Stabilize the current implementation
+
+- [ ] Run `rustfmt` over the crate and the ESP32-H2 example.
+- [ ] Clean up naming and formatting in the ESP32-H2 example.
+- [ ] Use appropriate unsigned types for dimensions and framebuffer indexes.
+- [ ] Fix the coordinate bounds check so `x` is checked against `WIDTH` and
+      `y` against `HEIGHT`.
+- [ ] Add `clear(color)`, immutable `frame_buffer()`, and consider a `release()`
+      method that returns the owned peripherals.
+- [ ] Document the controller commands and the source of the initialization
+      sequence values.
+
+Completion criterion: formatting, Clippy, and compilation pass without
+warnings, and the public API is documented.
+
+### 2. Add automated tests without hardware
+
+- [ ] Add mock SPI, GPIO, and delay implementations.
+- [ ] Test packing four two-bit pixels into each framebuffer byte.
+- [ ] Test all four colors, boundary coordinates, and out-of-bounds pixels.
+- [ ] Test that a newly created framebuffer is white (`0x55`).
+- [ ] Verify the command sequences for reset, initialization, power control,
+      and refresh.
+- [ ] Verify DC switching between commands and data.
+- [ ] Test propagation of SPI, DC, BUSY, and RESET errors.
+- [ ] Test BUSY polling behavior.
+
+Completion criterion: the protocol and framebuffer logic can be validated on
+a host machine without a connected display.
+
+### 3. Prevent hangs and improve the lifecycle API
+
+- [ ] Add a configurable timeout to BUSY polling.
+- [ ] Add a timeout variant to `DriverError`.
+- [ ] Allow different timeout values for reset, power-on, and refresh.
+- [ ] Document the active level and expected behavior of the BUSY signal.
+- [ ] Consider a stateful API or safe high-level lifecycle methods that make
+      invalid call ordering harder.
+- [ ] Decide and document whether `flush()` should manage display power.
+
+Completion criterion: a disconnected or faulty display returns an error in a
+bounded amount of time instead of blocking forever.
+
+### 4. Validate on real hardware
+
+- [ ] Add a diagnostic firmware example for all four solid colors.
+- [ ] Test corner pixels, a border, rows, columns, and a checkerboard pattern.
+- [ ] Test text and primitives rendered through `embedded-graphics`.
+- [ ] Test repeated reset, refresh, and power-off cycles.
+- [ ] Test refreshing after a prolonged sleep.
+- [ ] Test failure behavior with BUSY disconnected or held at its active level.
+- [ ] Record the FPC marking, board revision, SPI mode and frequency, BUSY
+      polarity, and operation timings for tested panels.
+
+Completion criterion: a reproducible hardware test confirms colors,
+orientation, command ordering, and lifecycle behavior.
+
+### 5. Improve power usage and performance
+
+- [ ] Implement deep sleep and a verified wake-up sequence.
+- [ ] Support chunked framebuffer transfers for HAL implementations that limit
+      SPI transaction size.
+- [ ] Measure stack usage and avoid unnecessary movement or copying of the
+      10,000-byte framebuffer.
+- [ ] Consider supporting an externally supplied framebuffer.
+- [ ] Add display rotation if it is useful beyond the transforms already
+      available in the graphics ecosystem.
+- [ ] Investigate partial refresh only after confirming that the exact panel
+      controller supports it and documenting its LUT and color limitations.
+
+Completion criterion: power and memory behavior are measured, documented, and
+suitable for constrained embedded applications.
+
+### 6. Prepare a release
+
+- [ ] Select and add a license.
+- [ ] Add crate metadata such as description, repository, license, keywords,
+      categories, and readme.
+- [ ] Add CI checks for formatting, Clippy, tests, and `no_std` compilation.
+- [ ] Build the ESP32-H2 example in a separate CI job.
+- [ ] Add a changelog and define the minimum supported Rust version.
+- [ ] Document wiring and known-compatible panel revisions.
+
+Completion criterion: the crate is documented, continuously checked, and
+ready to publish.
+
+The suggested implementation order is stabilization, host-side tests, BUSY
+timeouts, hardware validation, deep sleep and performance work, and finally
+release preparation. Partial refresh and additional controller families should
+be treated as separate follow-up milestones because they require dedicated
+hardware validation.
+
 ## Development
 
 Run the standard checks with:
