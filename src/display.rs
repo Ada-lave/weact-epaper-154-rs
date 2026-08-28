@@ -21,10 +21,7 @@ where
     BUSY: InputPin,
 {
     fn size(&self) -> Size {
-        Size {
-            width: WIDTH as u32,
-            height: HEIGHT as u32,
-        }
+        Size::new(WIDTH, HEIGHT)
     }
 }
 
@@ -36,22 +33,40 @@ where
     DELAY: DelayNs,
     RESET: OutputPin,
 {
+    /// Sets a single pixel in the framebuffer.
+    ///
+    /// Coordinates outside the display bounds are silently ignored.
     pub fn set_pixel(&mut self, x: i32, y: i32, color: WBRYColor) {
-        if x < 0 || y < 0 || x >= HEIGHT || y >= WIDTH {
+        if x < 0 || y < 0 || x >= WIDTH as i32 || y >= HEIGHT as i32 {
             return;
         }
 
-        let pixel = y * HEIGHT + x;
+        let pixel = y as u32 * WIDTH + x as u32;
         let byte_index = pixel / 4;
         let pixel_in_byte = pixel % 4;
         let shift = 6 - pixel_in_byte * 2;
 
         let buffer = self.frame_buffer_mut();
-
         buffer[byte_index as usize] &= !(0b11 << shift);
-
-        // write new
         buffer[byte_index as usize] |= (color as u8) << shift;
+    }
+
+    /// Reads the color of a pixel from the framebuffer.
+    ///
+    /// Returns `None` if coordinates are out of bounds.
+    pub fn get_pixel(&self, x: i32, y: i32) -> Option<WBRYColor> {
+        if x < 0 || y < 0 || x >= WIDTH as i32 || y >= HEIGHT as i32 {
+            return None;
+        }
+
+        let pixel = y as u32 * WIDTH + x as u32;
+        let byte_index = pixel / 4;
+        let pixel_in_byte = pixel % 4;
+        let shift = 6 - pixel_in_byte * 2;
+
+        let byte = self.frame_buffer()[byte_index as usize];
+        let bits = (byte >> shift) & 0b11;
+        Some(WBRYColor::from_bits(bits))
     }
 }
 
