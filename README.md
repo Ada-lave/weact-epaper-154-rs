@@ -173,13 +173,10 @@ match display.flush() {
 ### 1. Stabilize the current implementation
 
 - [x] Run `rustfmt` over the crate and the ESP32-H2 example.
-- [ ] Use appropriate unsigned types for dimensions and framebuffer indexes.
-- [ ] Fix the coordinate bounds check so `x` is checked against `WIDTH` and
-      `y` against `HEIGHT`.
-- [ ] Add `clear(color)`, immutable `frame_buffer()`, and consider a `release()`
-      method that returns the owned peripherals.
-- [ ] Document the controller commands and the source of the initialization
-      sequence values.
+- [x] Use appropriate unsigned types for dimensions and framebuffer indexes.
+- [x] Fix the coordinate bounds check so `x` is checked against `WIDTH` and `y` against `HEIGHT`.
+- [x] Add `clear(color)`, immutable `frame_buffer()`, and consider a `release()` method that returns the owned peripherals.
+- [x] Document the controller commands and the source of the initialization sequence values.
 
 ### 2. Add automated tests without hardware
 
@@ -187,8 +184,7 @@ match display.flush() {
 - [ ] Test packing four two-bit pixels into each framebuffer byte.
 - [ ] Test all four colors, boundary coordinates, and out-of-bounds pixels.
 - [ ] Test that a newly created framebuffer is white (`0x55`).
-- [ ] Verify the command sequences for reset, initialization, power control,
-      and refresh.
+- [ ] Verify the command sequences for reset, initialization, power control, and refresh.
 - [ ] Verify DC switching between commands and data.
 - [ ] Test propagation of SPI, DC, BUSY, and RESET errors.
 - [ ] Test BUSY polling behavior.
@@ -210,16 +206,13 @@ match display.flush() {
 ### 5. Improve power usage and performance
 
 - [ ] Implement deep sleep and a verified wake-up sequence.
-- [ ] Add display rotation if it is useful beyond the transforms already
-      available in the graphics ecosystem.
-- [ ] Investigate partial refresh only after confirming that the exact panel
-      controller supports it and documenting its LUT and color limitations.
+- [ ] Add display rotation if it is useful beyond the transforms already available in the graphics ecosystem.
+- [ ] Investigate partial refresh only after confirming that the exact panel controller supports it and documenting its LUT and color limitations.
 
 ### 6. Prepare a release
 
 - [ ] Select and add a license.
-- [ ] Add crate metadata such as description, repository, license, keywords,
-      categories, and readme.
+- [ ] Add crate metadata such as description, repository, license, keywords, categories, and readme.
 - [ ] Add CI checks for formatting, Clippy, tests, and `no_std` compilation.
 - [ ] Build the ESP32-H2 example in a separate CI job.
 - [ ] Add a changelog and define the minimum supported Rust version.
